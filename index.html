@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>My Game</title>
+  </head>
+  <body>
+    <script>
+     const canvas = document.createElement('canvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+document.body.appendChild(canvas);
+
+// Setting up the background image
+const backgroundImage = new Image();
+backgroundImage.src = 'background.jpg';
+
+// Creating the character sprite
+function Character(imageSrc, x, y, width, height) {
+  this.image = new Image();
+  this.image.src = imageSrc;
+  this.x = x;
+  this.y = y;
+  this.width = width;
+  this.height = height;
+  this.speedX = 0;
+  this.speedY = 0;
+  this.gravity = 0.2;
+}
+
+// Adding the jump function to the character
+Character.prototype.jump = function() {
+  this.speedY = -6;
+}
+
+// Updating the character's position
+Character.prototype.update = function() {
+  this.y += this.speedY;
+  this.speedY += this.gravity;
+  if (this.y + this.height > canvas.height) {
+    this.y = canvas.height - this.height;
+    this.speedY = 0;
+  }
+}
+
+// Creating the snowflake blueprint
+function Snowflake(x, y, radius) {
+  this.x = x;
+  this.y = y;
+  this.radius = radius;
+  this.speedY = Math.random() * 3 + 1;
+}
+
+// Creating an array to hold the snowflakes
+const snowflakes = [];
+
+// Creating a function to generate snowflakes
+function generateSnowflakes() {
+  const x = Math.random() * canvas.width;
+  const radius = Math.random() * 3 + 1;
+  snowflakes.push(new Snowflake(x, 0, radius));
+}
+
+// Setting up the sound effects
+const jumpSound = new Audio('jump.wav');
+const snowfallSound = new Audio('snowfall.mp3');
+
+// Adding event listeners for key presses
+document.addEventListener('keydown', function(event) {
+  if (event.code === 'Space') {
+    character.jump();
+    jumpSound.play();
+  }
+});
+
+// Rendering the game
+function render() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  // Rendering the background image
+  ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+
+  // Rendering the characters
+  character.update();
+  ctx.drawImage(character.image, character.x, character.y, character.width, character.height);
+
+  // Rendering the snowflakes
+  for (let i = 0; i < snowflakes.length; i++) {
+    const snowflake = snowflakes[i];
+    snowflake.y += snowflake.speedY;
+    ctx.beginPath();
+    ctx.arc(snowflake.x, snowflake.y, snowflake.radius, 0, Math.PI * 2);
+    ctx.fillStyle = 'white';
+    ctx.fill();
+    ctx.closePath();
+  }
+
+  // Removing snowflakes that have gone off the screen
+  snowflakes.forEach(function(snowflake, index) {
+    if (snowflake.y > canvas.height + snowflake.radius) {
+      snowflakes.splice(index, 1);
+    }
+  });
+
+  // Generating new snowflakes
+  if (Math.random() < 0.05) {
+    generateSnowflakes();
+    snowfallSound.play();
+  }
+
+  requestAnimationFrame(render);
+}
+
+// Creating the character
+const character = new Character('character.png', 100, canvas.height - 100, 100, 100);
+
+// Starting the game loop
+render();
+    </script>
+  </body>
+</html>
